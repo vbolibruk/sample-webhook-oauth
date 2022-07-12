@@ -9,6 +9,11 @@ app.use(express.urlencoded());
 
 app.post('/oauth', (req, res) => {
     console.log(req.body)
+    const authHeader = req.get('Authorization');
+    const verified = authCheck(authHeader)
+    if (!verified) {
+        return res.status(400).send("Invalid token.");
+    }
 
     const payload =
         {
@@ -58,6 +63,16 @@ app.post('/oauth', (req, res) => {
     )
 })
 
+function authCheck(authHeader) {
+    const consumerId = process.env.CONSUMERID || "12345";
+    const consumerSecret = process.env.CONSUMERSECRET || "12345";
+    const authString = 'Basic ' + Buffer.from(consumerId + ':' + consumerSecret).toString('base64');
+    if (authHeader === authString) {
+        return true
+    } else {
+        return false
+    }
+}
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
 })
